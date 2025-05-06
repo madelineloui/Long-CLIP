@@ -10,7 +10,7 @@ source activate ovdsat
 
 EXP_NAME="auto"
 EPOCHS=25
-BATCH_SIZE=2
+BATCH_SIZE=44
 LR=1e-6
 WD=1e-2
 LOG_SCALE=4.6052

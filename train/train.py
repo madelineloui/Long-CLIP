@@ -249,7 +249,7 @@ class CLIP_Clean_Train():
         if rank == 0:
             self.model.eval()
             testset = share4v_val_dataset()
-            testloader = torch.utils.data.DataLoader(testset, batch_size=1000, num_workers=1, pin_memory=True)
+            testloader = torch.utils.data.DataLoader(testset, batch_size=1000, num_workers=32, pin_memory=True)
             with torch.no_grad():    
 
                 acc = self.test_epoch(testloader)
@@ -263,7 +263,7 @@ class CLIP_Clean_Train():
         #trainset = share4v_train_dataset()
         trainset = CSVTrainDataset(csv_path='/home/gridsan/manderson/vlm4rs/fmow/fmow-mm-short-long.csv')
         train_sampler = DistributedSampler(dataset=trainset, shuffle=True)
-        train_loader = torch.utils.data.DataLoader(trainset, batch_size=self.batch_size, sampler=train_sampler, num_workers=32, pin_memory=True)
+        train_loader = torch.utils.data.DataLoader(trainset, batch_size=self.batch_size, sampler=train_sampler, num_workers=8, pin_memory=True)
 
         self.scheduler = cosine_lr(self.optimizer, base_lr=self.lr, warmup_length=warmup_length, steps=self.num_epoch * len(train_loader))
         start_epoch = 0
