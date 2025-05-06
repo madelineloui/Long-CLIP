@@ -54,7 +54,7 @@ class CLIP_Clean_Train():
         self.writer = SummaryWriter(self.logdir)
 
         
-
+        ### remove?
         self.model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[local_rank])
            
         self.optimizer = optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
@@ -249,7 +249,7 @@ class CLIP_Clean_Train():
         if rank == 0:
             self.model.eval()
             testset = share4v_val_dataset()
-            testloader = torch.utils.data.DataLoader(testset, batch_size=1000, num_workers=8, pin_memory=True)
+            testloader = torch.utils.data.DataLoader(testset, batch_size=1000, num_workers=1, pin_memory=True)
             with torch.no_grad():    
 
                 acc = self.test_epoch(testloader)
@@ -299,9 +299,11 @@ def setup_distributed(backend="nccl", port=None):
     """
     num_gpus = torch.cuda.device_count()
 
+    #if num_gpus > 1:
     if "SLURM_JOB_ID" in os.environ:
         rank = int(os.environ["SLURM_PROCID"])
-        world_size = int(os.environ["SLURM_NTASKS"])
+        #world_size = int(os.environ["SLURM_NTASKS"])
+        world_size=1
         node_list = os.environ["SLURM_NODELIST"]
         addr = subprocess.getoutput(f"scontrol show hostname {node_list} | head -n1")
         # specify master port
@@ -319,7 +321,7 @@ def setup_distributed(backend="nccl", port=None):
         world_size = int(os.environ["WORLD_SIZE"])
 
     torch.cuda.set_device(rank % num_gpus)
-    
+
     dist.init_process_group(
         backend=backend,
         world_size=world_size,
@@ -327,6 +329,13 @@ def setup_distributed(backend="nccl", port=None):
     )
     torch.cuda.set_device(device=f'cuda:{rank % num_gpus}')
     return rank, rank % num_gpus
+    # else:
+    #     dist.init_process_group(
+    #         backend=backend,
+    #         world_size=1,
+    #         rank=0,
+    #     )
+    #     return 0,0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='params')
