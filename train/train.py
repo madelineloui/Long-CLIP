@@ -8,9 +8,11 @@ import torch.distributed as dist
 from tqdm import tqdm
 
 import sys
-sys.path.append("..")
+#sys.path.append("..")
+sys.path.append("/home/gridsan/manderson/ovdsat/Long-CLIP")
 
 from sharegpt4v import share4v_val_dataset, share4v_train_dataset
+from csv_dataset import CSVValDataset, CSVTrainDataset
 from model import longclip
 
 from torch.utils.data.distributed import DistributedSampler
@@ -247,7 +249,7 @@ class CLIP_Clean_Train():
         if rank == 0:
             self.model.eval()
             testset = share4v_val_dataset()
-            testloader = torch.utils.data.DataLoader(testset, batch_size=1000, num_workers=32, pin_memory=True)
+            testloader = torch.utils.data.DataLoader(testset, batch_size=1000, num_workers=8, pin_memory=True)
             with torch.no_grad():    
 
                 acc = self.test_epoch(testloader)
@@ -258,7 +260,8 @@ class CLIP_Clean_Train():
             return
     
     def train(self, resume=False, warmup_length=200):
-        trainset = share4v_train_dataset()
+        #trainset = share4v_train_dataset()
+        trainset = CSVTrainDataset(csv_path='/home/gridsan/manderson/vlm4rs/fmow/fmow-mm-short-long.csv')
         train_sampler = DistributedSampler(dataset=trainset, shuffle=True)
         train_loader = torch.utils.data.DataLoader(trainset, batch_size=self.batch_size, sampler=train_sampler, num_workers=32, pin_memory=True)
 

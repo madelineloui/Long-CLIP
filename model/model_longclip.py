@@ -4,6 +4,7 @@ from typing import Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
+from torch.distributed.nn.functional import all_gather
 from torch import nn
 
 
@@ -450,7 +451,7 @@ class CLIP(nn.Module):
         text_features_short = text_features_short / text_features_short.norm(dim=1, keepdim=True)
         image_features_short = self.PCA(image_features_long, 32)
             
-        image_feat_all_long = torch.cat(torch.distributed.nn.all_gather(image_features_long), dim=0)#gather with grad
+        image_feat_all_long = torch.cat(all_gather(image_features_long), dim=0)#gather with grad
         image_features_all_short = torch.cat(torch.distributed.nn.all_gather(image_features_short), dim=0)
         text_feat_all_long = torch.cat(torch.distributed.nn.all_gather(text_features_long), dim=0)
         text_feat_all_short = torch.cat(torch.distributed.nn.all_gather(text_features_short), dim=0)
